@@ -19,6 +19,10 @@ public class TextEditor extends JFrame {
     private JScrollPane ScrollPane;
     private JPanel bottomPanel;
     private JPanel topPanel;
+    private JMenu MenuFile;
+    private JMenuItem MenuLoad;
+    private JMenuItem MenuSave;
+    private JMenuItem MenuExit;
 
     public TextEditor() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,13 +38,19 @@ public class TextEditor extends JFrame {
         ScrollPane = scrollableTextArea();
         topPanel = topBar();
         bottomPanel = bottomBar();
+        MenuSave = MenuSave();
+        MenuLoad = MenuLoad();
+        MenuExit = MenuExit();
+        MenuFile = MenuFile();
 
         topPanel.add(FilenameField,BorderLayout.EAST);
         topPanel.add(SaveButton);
         topPanel.add(LoadButton);
 
-        //bottomPanel.add(ScrollPane);
-
+        bottomPanel.add(ScrollPane);
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(MenuFile);
+        setJMenuBar(menuBar);
         add(topPanel,BorderLayout.PAGE_START);
         add(ScrollPane,BorderLayout.CENTER);
 
@@ -109,6 +119,42 @@ public class TextEditor extends JFrame {
         bottomBar.setSize(300,300);
 
         return bottomBar;
+    }
+
+
+    private JMenu MenuFile(){
+        JMenu MenuFile = new JMenu("File");
+        MenuFile.setName("MenuFile");
+        MenuFile.add(MenuSave);
+        MenuFile.add(MenuLoad);
+        MenuFile.add(MenuExit);
+
+        return MenuFile;
+    }
+
+    private JMenuItem MenuSave(){
+        JMenuItem MenuSave = new JMenuItem("Save");
+        MenuSave.setName("MenuSave");
+        MenuSave.addActionListener(e -> {
+            saveFile();
+        });
+        return MenuSave;
+    }
+
+    private JMenuItem MenuLoad(){
+        JMenuItem MenuLoad = new JMenuItem("Load");
+        MenuLoad.setName("MenuLoad");
+        MenuLoad.addActionListener(e -> {
+            loadFile();
+        });
+        return MenuLoad;
+    }
+
+    private JMenuItem MenuExit(){
+        JMenuItem MenuExit = new JMenuItem("Exit");
+        MenuExit.setName("MenuExit");
+        dispose();
+        return MenuExit;
     }
 
     private void saveFile(){
