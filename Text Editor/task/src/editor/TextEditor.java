@@ -20,6 +20,7 @@ public class TextEditor extends JFrame {
     List<Integer> finalIndex = new ArrayList<>();
     ListIterator<Integer> initIndexIter;
     ListIterator<Integer> finalIndexIter;
+    boolean flag = false;
 
 
     private JTextArea TextArea;
@@ -62,7 +63,7 @@ public class TextEditor extends JFrame {
         setSize(600, 500);
         setVisible(true);
         //setLayout(null);
-        setTitle("The first Stage");
+        setTitle("Text Editor");
 
         TextArea = getTextArea();
         SearchField = SearchField();
@@ -232,22 +233,105 @@ public class TextEditor extends JFrame {
     private JMenuItem MenuStartSearch(){
         JMenuItem MenuStartSearch = new JMenuItem("Start search");
         MenuStartSearch.setName("MenuStartSearch");
+        MenuStartSearch.addActionListener(e-> {
+            new SwingWorker(){
+
+                @Override
+                protected Object doInBackground() throws Exception {
+                    normalSearch();
+                    return null;
+                }
+                protected void done() {
+
+                    initIndexIter = initIndex.listIterator();
+                    finalIndexIter  = finalIndex.listIterator();
+                    System.out.println(initIndexIter.hasNext());
+                    if(finalIndexIter.hasNext()) {
+                        int i = initIndexIter.next();
+                        int j = finalIndexIter.next();
+                        TextArea.setCaretPosition(j);
+                        TextArea.select(i, j);
+                        TextArea.grabFocus();
+                    }
+
+                }
+            }.execute();
+
+        });
         return MenuStartSearch;
     }
     private  JMenuItem MenuPreviousMatch(){
         JMenuItem MenuPreviousMatch = new JMenuItem("Previous search");
         MenuPreviousMatch.setName("MenuPreviousMatch");
+        MenuPreviousMatch.addActionListener(e -> {
+            System.out.println("previous match pressed");
+            if(!finalIndex.isEmpty()) {
+                System.out.println(initIndexIter.hasPrevious());
+                if(initIndexIter.hasPrevious()) {
+                    int i = initIndexIter.previous();
+                    int j = finalIndexIter.previous();
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+                }
+                else {
+                    int i =0;
+                    int j = 0;
+                    while (initIndexIter.hasNext()) {
+                        initIndexIter.next();
+                        finalIndexIter.next();
+                    }
+                    i = initIndexIter.previous();
+                    j = finalIndexIter.previous();
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+
+                }
+
+            }
+        });
         return MenuPreviousMatch;
     }
     private JMenuItem MenuNextMatch(){
         JMenuItem MenuNextMatch = new JMenuItem("Next match");
         MenuNextMatch.setName("MenuNextMatch");
+        MenuNextMatch.addActionListener(e -> {
+            if(!finalIndex.isEmpty()) {
+                if(finalIndexIter.hasNext()) {
+                    int i = initIndexIter.next();
+                    int j = finalIndexIter.next();
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+                }
+                else {
+                    int i = 0;
+                    int j = 0;
+                    while (initIndexIter.hasPrevious()){
+                        i = initIndexIter.previous();
+                        j = finalIndexIter.previous();
+                    }
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+                }
+            }
+        });
         return MenuNextMatch;
     }
 
     private JMenuItem MenuUseRegExp(){
         JMenuItem MenuUseRegExp = new JMenuItem("use regular expressions");
         MenuUseRegExp.setName("MenuUseRegExp");
+        MenuUseRegExp.addActionListener(e->{
+            if(!UseRegExCheckbox.isSelected()) {
+                UseRegExCheckbox.setSelected(true);
+            }
+            else {
+                UseRegExCheckbox.setSelected(false);
+            }
+        });
         return MenuUseRegExp;
     }
 
@@ -259,15 +343,51 @@ public class TextEditor extends JFrame {
                 BorderFactory.createLineBorder(Color.CYAN, 0),
                 BorderFactory.createLineBorder(Color.BLACK, 0)));
         StartSearchButton.addActionListener(e ->{
-            new SwingWorker(){
+            if(!UseRegExCheckbox.isSelected()) {
+                new SwingWorker() {
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        normalSearch();
+                        return null;
+                    }
 
-                @Override
-                protected Object doInBackground() throws Exception {
-                    normalSearch();
-                    return null;
-                }
-            }.execute();
-        });
+                    protected void done() {
+                        initIndexIter = initIndex.listIterator();
+                        finalIndexIter = finalIndex.listIterator();
+                        System.out.println(initIndexIter.hasNext());
+                        if (finalIndexIter.hasNext()) {
+                            int i = initIndex.get(0);
+                            int j = finalIndex.get(0);
+                            TextArea.setCaretPosition(j);
+                            TextArea.select(i, j);
+                            TextArea.grabFocus();
+                        }
+                    }
+                }.execute();
+            }
+            else {
+         new SwingWorker(){
+             @Override
+             protected Object doInBackground() throws Exception {
+                 regExSearch();
+                 return null;
+             }
+
+             protected void done() {
+                 initIndexIter = initIndex.listIterator();
+                 finalIndexIter = finalIndex.listIterator();
+                 System.out.println(initIndexIter.hasNext());
+                 if (finalIndexIter.hasNext()) {
+                     int i = initIndex.get(0);
+                     int j = finalIndex.get(0);
+                     TextArea.setCaretPosition(j);
+                     TextArea.select(i, j);
+                     TextArea.grabFocus();
+                 }
+             }
+         }.execute();
+            }
+            });
         return StartSearchButton;
     }
 
@@ -278,12 +398,30 @@ public class TextEditor extends JFrame {
                 BorderFactory.createLineBorder(Color.CYAN, 0),
                 BorderFactory.createLineBorder(Color.BLACK, 0)));
         PreviousMatchButton.addActionListener(e -> {
-            if(finalIndexIter.hasPrevious()) {
-                int i = finalIndexIter.previous();
-                int j = initIndexIter.previous();
-                TextArea.setCaretPosition(j);
-                TextArea.select(i, j);
-                TextArea.grabFocus();
+            System.out.println("previous match pressed");
+            if(!finalIndex.isEmpty()) {
+                System.out.println(initIndexIter.hasPrevious());
+                if(initIndexIter.hasPrevious()) {
+                    int i = initIndexIter.previous();
+                    int j = finalIndexIter.previous();
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+                }
+                else {
+                    int i =0;
+                    int j = 0;
+                    while (initIndexIter.hasNext()) {
+                        initIndexIter.next();
+                        finalIndexIter.next();
+                    }
+                    i = initIndexIter.previous();
+                    j = finalIndexIter.previous();
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+
+                }
 
             }
         });
@@ -297,13 +435,31 @@ public class TextEditor extends JFrame {
                 BorderFactory.createLineBorder(Color.CYAN, 0),
                 BorderFactory.createLineBorder(Color.BLACK, 0)));
         NextMatchButton.addActionListener(e -> {
-            if(finalIndexIter.hasNext()) {
-                int i = finalIndexIter.next();
-                int j = initIndexIter.next();
-                TextArea.setCaretPosition(j);
-                TextArea.select(i, j);
-                TextArea.grabFocus();
+            if(flag){
+                int i = initIndexIter.next();
+               int j =  finalIndexIter.next();
+                flag = false;
+            }
+            if(!finalIndex.isEmpty()) {
+                if(finalIndexIter.hasNext()) {
+                    int i = initIndexIter.next();
+                    int j = finalIndexIter.next();
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+                }
+                else {
+                    int i = 0;
+                    int j = 0;
+                    while (initIndexIter.hasPrevious()){
+                      i =  initIndexIter.previous();
+                      j =  finalIndexIter.previous();
+                    }
 
+                    TextArea.setCaretPosition(j);
+                    TextArea.select(i, j);
+                    TextArea.grabFocus();
+                }
             }
         });
         return NextMatchButton;
@@ -362,6 +518,7 @@ public class TextEditor extends JFrame {
     }
 
     private void normalSearch(){
+        flag = true;
         String target = SearchField.getText();
         initIndex.clear();
         finalIndex.clear();
@@ -381,20 +538,26 @@ public class TextEditor extends JFrame {
 
             System.out.println(firstIndex+ " and " + lastIndex + "and tempend" + tempEnd);
         }
-        initIndexIter = initIndex.listIterator();
-        finalIndexIter  = finalIndex.listIterator();
-        System.out.println(initIndexIter.hasNext());
-        if(finalIndexIter.hasNext()) {
-            int i = finalIndexIter.next();
-            int j = initIndexIter.next();
-            TextArea.setCaretPosition(j);
+        System.out.println(initIndex.toString());
+        System.out.println(finalIndex.toString());
+    }
 
-            TextArea.select(i, j);
-            TextArea.grabFocus();
+    private  void regExSearch(){
+        flag = true;
+        initIndex.clear();
+        finalIndex.clear();
+        Pattern pattern = Pattern.compile(SearchField.getText());
+        Matcher matcher = pattern.matcher(TextArea.getText());
+        while (matcher.find()){
+            int firstIndex = matcher.start();
+            int lastIndex = matcher.end();
+
+            initIndex.add(firstIndex);
+            finalIndex.add(lastIndex);
+            System.out.println(firstIndex+ " and " + lastIndex);
         }
         System.out.println(initIndex.toString());
         System.out.println(finalIndex.toString());
-
     }
 
 }
